@@ -87,18 +87,18 @@ class OneWire:
         # check if the system file exists
         # if not, set it up, then check one more time
         if not setupOneWire(self.gpio):
-            print "Could not set up 1-Wire on GPIO " + self.gpio
+            print("Could not set up 1-Wire on GPIO " + self.gpio)
             return False
 
         # check if the kernel is recognizing slaves
         if not checkSlaves():
-            print "Kernel is not recognizing slaves."
+            print("Kernel is not recognizing slaves.")
             return False
 
         # check if this instance's device is properly registered
         if not checkRegistered(self.address):
             # device is not recognized by the kernel
-            print "Device is not registered on the bus."
+            print("Device is not registered on the bus.")
             return False                        
 
         # the device has been properly set up

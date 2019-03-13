@@ -9,7 +9,7 @@ class TemperatureSensor:
 
         # if specified interface not supported
         if self.interface not in self.supportedInterfaces:
-            print "Unsupported interface."
+            print("Unsupported interface.")
             self.listInterfaces()
             return
 
@@ -23,9 +23,9 @@ class TemperatureSensor:
             self.readValue = self.__readOneWire;
 
     def listInterfaces(self):
-        print "The supported interfaces are:"
+        print("The supported interfaces are:")
         for interface in self.supportedInterfaces:
-            print interface
+            print(interface)
 
     # read one-wire devices
     def __readOneWire(self):

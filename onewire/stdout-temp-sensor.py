@@ -10,7 +10,7 @@ pollingInterval = 1 # seconds
 def __main__():
     # check if 1-Wire is setup in the kernel
     if not oneWire.setupOneWire(str(oneWireGpio)):
-        print "Kernel module could not be inserted. Please reboot and try again."
+        print("Kernel module could not be inserted. Please reboot and try again.")
         return -1
 
     # get the address of the temperature sensor
@@ -20,14 +20,14 @@ def __main__():
     # instantiate the temperature sensor object
     sensor = TemperatureSensor("oneWire", { "address": sensorAddress, "gpio": oneWireGpio })
     if not sensor.ready:
-        print "Sensor was not set up correctly. Please make sure that your sensor is firmly connected to the GPIO specified above and try again."
+        print("Sensor was not set up correctly. Please make sure that your sensor is firmly connected to the GPIO specified above and try again.")
         return -1
 
     # infinite loop - runs main program code continuously
     while 1:
         # check and print the temperature
         value = sensor.readValue()
-        print "T = " + str(value) + " C"
+        print("T = " + str(value) + " C")
         time.sleep(pollingInterval)
 
 if __name__ == '__main__':
