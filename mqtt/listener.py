@@ -1,60 +1,67 @@
 import time
+import sqlite 
 import paho.mqtt.client as mqtt
-import yaml
+from mqtt_config import configuration
 
-class configuration():
-    def __init__(self, config_file):
-        self.config_file = config_file
-        self.broker = None
-        self.broker_name = None
-        self.service_list = None
-
-        if self.config_file:
-            try:
-                with open(config_file, 'r') as ymlfile:
-                    yfile = yaml.load(ymlfile)
-                    self.broker = yfile['server']['broker']
-                    print('Broker: {}'.format(self.broker))
-                    self.broker_name = yfile['server']['server_type']
-
-                    self.service_list = yfile['service']['targets']
-                    print('Services: {}'.format(self.service_list))
-            except:
-                print('failed to open config file')
-
-    def get_broker_services(self):
-        return self.broker, self.service_list
 
 class listener():
-    def __init__(self, client_name, broker, services):
+    def __init__(self, client_name, broker, services, run_silent=False):
         self.client = mqtt.Client(client_name)
         self.broker = broker
         self.services = services
         self.ok_go = True
-
+	self.run_silent = run_silent
+	
         if self.client:
             self.client.on_message = listener.on_message
             self.client.on_publish = listener.on_publish
     
     @staticmethod
+    def log_to_db(db, payload):
+        '''
+	passes the payload to the db for processing
+	and storage
+	'''
+	pass
+    
+    @staticmethod
     def on_message(client, userdata, message):
         time.sleep(1)
         payload = str(message.payload.decode("utf-8"))
-        print('{}'.format(payload))
-
+        if not self.run_silent:
+	    print('{}'.format(payload))
+	listener.log_to_db('swarm.sqlite', payload)
+	
     @staticmethod
     def on_publish(client, userdata, mid):
         print('message ID: {}'.format(mid))
 
     def connect(self):
+	'''
+	Connect to the broker so that we can subscribe 
+	and start recieving messages
+	'''
         self.client.connect(self.broker)
 
     def subscribe(self):
+	'''
+	subscribe to the services in the list
+	passed into the object when it was 
+	instantiated 
+	'''
         for service in self.services:
             self.client.subscribe(service)
 
     def loop(self):
-        try:
+        '''
+	Invoke this method to listen to the broker
+	and recieve payloads from the services 
+	that the listener connected to by invoking the 
+	subscribe method
+	Requires that the connect() and then subscribe()
+	methods were previously called
+	'''
+	try:
             while self.ok_go:
                 self.client.loop_forever()
         except (EOFError, KeyboardInterrupt) as e:
