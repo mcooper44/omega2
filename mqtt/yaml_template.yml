@@ -1,0 +1,31 @@
+server:
+    broker: broker_address # ip address
+    server_type: name_of_broker # what is box name
+client:
+    client_name: client1
+    devices:
+        - device_id_1
+service: # for the broker to listen to
+    targets:
+        - a/b/c
+        - a/b/d
+        - a/c/f
+devices:
+    device_id_1: 
+        service: a/b/c
+        type: d18b20
+        returns: temp
+        location: top_sekret
+        interval: 60 # how often we ping
+    device_id_2: 
+        service: a/b/d
+        type: d18b20
+        returns: temp
+        location: top_sekret
+        interval: 60 # how often we ping
+    device_id_3: 
+        service: a/c/f
+        type: dh411
+        returns: [temp, humidity]
+        location: top_sekret
+        interval: 60 # how often we ping
