@@ -2,19 +2,18 @@
 import time
 from temperatureSensor import TemperatureSensor
 import oneWire
+from ..mqtt import mqtt_config
 
 import paho.mqtt.client as mqtt
-import mqtt_config as config
 
 # info necessary for mqtt
-c_name = config.c_name # client name
-b_name = config.b_name # broker name
-mqtt_service = config.mqtt_service # mqtt service path a/b/c
-
+b_name, c_name = mqtt_config.get_client() # broker and client name
+device = mqtt_config.get_device_by_type('temp')[0]
+mqtt_service = device['service'] # mqtt service path a/b/c
 
 # setup onewire and polling interval
 oneWireGpio = 19 # set the sensor GPIO
-pollingInterval = config.pollingInterval # int - representing seconds
+pollingInterval = device['interval'] #  int - representing seconds
 
 def on_message(client, userdata, message):
     '''
