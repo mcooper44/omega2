@@ -15,21 +15,43 @@ paths = {
 ## a bunch of functions to be used by the OneWire class
 # insert the 1-Wire kernel module
 # it's also called a "module", but it's actually software for the Omega's firmware!
+# https://docs.onion.io/omega2-docs/communicating-with-1w-devices.html
 def insertKernelModule(gpio):
+    '''
+    uses the insmod command to insert the custom kernel module
+    for using 1 wire devices with the omega2.
+    
+    use the removeKernelModule(gpio) function to remove the module
+    and free up resources
+    
+    more material on the kernel module is found at:
+    https://github.com/OnionIoT/source/blob/openwrt-18.06/package/kernel/w1-gpio-custom/src/w1-gpio-custom.c
+    '''
     argBus = "bus0=0," + gpio + ",0"
     subprocess.call(["insmod", "w1-gpio-custom", argBus])
 
 # check the filesystem to see if 1-Wire is properly setup
 def checkFilesystem():
+    '''
+    the module will create a directory in the /sys/devices/ folder
+    called w1_bus_master1.   using the os module this function
+    will return true of false indicating if the kernel module was 
+    inserted sucessfully or not
+    '''
     return os.path.isdir(oneWireDir)
 
 # function to setup the 1-Wire bus
-def setupOneWire(gpio):
-    # check and retry up to 2 times if the 1-Wire bus has not been set up
-    for i in range (2):
+def setupOneWire(gpio, times_to_try=2):
+    '''
+    uses the checkFilesystem function to determine if the 
+    oneWire directory has been setup as a result of inserting 
+    the kernel module
+    '''
+    # check and retry up to n times if the 1-Wire bus has not been set up
+    for i in range (times_to_try):
+	
         if checkFilesystem():
             return True # exits if the bus is setup
-            # no else statement is needed after this return statement
 
         # tries to insert the module if it's not setup
         insertKernelModule(gpio)
@@ -60,6 +82,15 @@ def checkRegistered(address):
 
 # scan addresses of all connected 1-w devices
 def scanAddresses():
+    '''
+    the omega kernal module will mount the hardware to a dir
+    with the name of the attached one wire device
+    the kernel module scans for attached devices at a regular interval
+    
+    param: label can be invoked if using this method to 
+    identify the serial number of the device for labelling purposes
+    it should be the type of hardware i.e. ds18b20 etc.
+    '''
     if not checkFilesystem():
         return False
 
@@ -71,6 +102,10 @@ def scanAddresses():
 
 # use to get the address of a single connected device
 def scanOneAddress():
+    '''
+    returns the address of the first device in the directory listing
+    of attached one wire devices
+    '''
     addresses = scanAddresses()
     return addresses[0]
 
@@ -86,6 +121,7 @@ class OneWire:
     def __prepare(self):
         # check if the system file exists
         # if not, set it up, then check one more time
+	# store return value True/False in self.setupComplete
         if not setupOneWire(self.gpio):
             print("Could not set up 1-Wire on GPIO " + self.gpio)
             return False
