@@ -1,3 +1,9 @@
+'''
+methods and classes for a onewire mqtt connected 
+temperature sensor
+'''
+
+
 # import modules and classes
 import time
 from temperatureSensor import TemperatureSensor
@@ -6,9 +12,11 @@ from ..mqtt import mqtt_config
 
 import paho.mqtt.client as mqtt
 
+node = mqtt_config.configuration('config.yaml')
+
 # info necessary for mqtt
-b_name, c_name = mqtt_config.get_client() # broker and client name
-device = mqtt_config.get_device_by_type('temp')[0]
+b_name, c_name = node.get_client() # broker and client name
+device = node.get_device_by_type('temp')[0]
 mqtt_service = device['service'] # mqtt service path a/b/c
 
 # setup onewire and polling interval
@@ -34,11 +42,13 @@ def __main__():
 
     # get the address of the temperature sensor
     #   it should be the only device connected in this experiment    
-    sensorAddress = oneWire.scanOneAddress()
+    sensorAddress = oneWire.scanOneAddress() # NEED TO CHANGE THIS
 
     # instantiate the temperature sensor object
-    sensor = TemperatureSensor("oneWire", { "address": sensorAddress, "gpio": oneWireGpio })
-    if not sensor.ready:
+    sensor = TemperatureSensor()
+    sensor.add_sensor("oneWire", {"address":sensorAddress, "gpio": oneWireGpio})
+    ok_to_talk = sensor.ask_status(sensorAddress)
+    if not ok_to_talk:
         print("Sensor was not set up correctly. Please make sure that your sensor is firmly connected to the GPIO specified above and try again.")
         return -1
 
@@ -53,7 +63,7 @@ def __main__():
     try:
         while True:
 	    # check and print the temperature
-            value = sensor.readValue()
+            value = sensor.read_sensor(sensorAddress)
             client.publish(mqtt_service, str(value))
 	    #print("T = " + str(value) + " C")
             time.sleep(pollingInterval) # should be at least 4-5 seconds
