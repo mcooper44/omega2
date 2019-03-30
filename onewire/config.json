@@ -1,0 +1,43 @@
+{
+   "server": {
+      "broker": "192.168.1.4",
+      "server_type": "pi_box"
+   },
+   "client": {
+      "client_name": "bbe9",
+      "devices": [
+         "device_id_1"
+      ]
+   },
+   "service": {
+      "targets": [
+         "livingroom/bbe9/d18b20"
+      ]
+   },
+   "devices": {
+      "device_id_1": {
+         "service": "livingroom/bbe9/d18b20",
+         "type": "d18b20",
+         "returns": "temp",
+         "location": "top_sekret",
+         "interval": 60
+      },
+      "device_id_2": {
+         "service": "a/b/d",
+         "type": "d18b20",
+         "returns": "temp",
+         "location": "top_sekret",
+         "interval": 60
+      },
+      "device_id_3": {
+         "service": "a/c/f",
+         "type": "dh411",
+         "returns": [
+            "temp",
+            "humidity"
+         ],
+         "location": "top_sekret",
+         "interval": 60
+      }
+   }
+}
