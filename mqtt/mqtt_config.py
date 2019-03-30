@@ -28,10 +28,11 @@ class configuration():
                     print('Services loaded: {}'.format(self.service_list))
 		    
                     self.device_profile = yfile['devices'] # device dictionaries
-                    print('Devices : {}'.format(self.c_devices.keys()))
+                    print('Devices : {}'.format(self.device_profile.keys()))
 		            
                     self.c_name = yfile['client']['client_name']
                     self.c_devices = yfile['client']['devices'] # names dev_id_1
+                    print('client name {} with devices {}'.format(self.c_name, self.c_devices))
             except:
                 print('failed to open config file')
 
