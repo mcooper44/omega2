@@ -8,20 +8,21 @@ temperature sensor
 import time
 from temperatureSensor import TemperatureSensor
 import oneWire
-from ..mqtt import mqtt_config
+
+from json_config import configuration
 
 import paho.mqtt.client as mqtt
 
-node = mqtt_config.configuration('config.yaml')
+node = configuration('config.json')
 
 # info necessary for mqtt
 b_name, c_name = node.get_client() # broker and client name
-device = node.get_device_by_type('temp')[0]
-mqtt_service = device['service'] # mqtt service path a/b/c
+#device = node.get_device_by_type('temp')
+mqtt_service = node.service_list[0] # mqtt service path a/b/c
 
 # setup onewire and polling interval
 oneWireGpio = 19 # set the sensor GPIO
-pollingInterval = device['interval'] #  int - representing seconds
+pollingInterval = 25 #  int - representing seconds
 
 def on_message(client, userdata, message):
     '''
@@ -53,7 +54,7 @@ def __main__():
         return -1
 
     client = mqtt.Client(c_name)
-#    client.on_message=on_message # attaching function to grab callback
+    #client.on_message=on_message # attaching function to grab callback
     client.connect(b_name)
     client.loop_start()
     client.subscribe(mqtt_service)
@@ -65,7 +66,7 @@ def __main__():
 	    # check and print the temperature
             value = sensor.read_sensor(sensorAddress)
             client.publish(mqtt_service, str(value))
-	    #print("T = " + str(value) + " C")
+            print("T = " + str(value) + " C")
             time.sleep(pollingInterval) # should be at least 4-5 seconds
     except (ValueError, EOFError, KeyboardInterrupt) as e:
         print('encountered {}'.format(e))

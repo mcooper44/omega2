@@ -8,7 +8,7 @@ class onewire_temp_sensor:
         self.ready_status = False
         self.driver = None
 
-        if all(self.address, self.gpio):
+        if all((self.address, self.gpio)):
             self.driver = OneWire(self.address, self.gpio)
 
         if self.driver:
