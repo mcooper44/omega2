@@ -11,10 +11,10 @@ class configuration():
         self.broker = None
         self.broker_name = None
         self.service_list = None # master list
-	self.devices = None # master list
-	self.c_name = None 
-	self.c_devices = None # client specific list
-	self.c_services = None # client specific list
+        self.device_profile = None # master list in dict form keys = dev_name
+        self.c_name = None 
+        self.c_devices = None # client specific list
+        self.c_services = None # client specific list of device names i.e. dev_id_1
 	
         if self.config_file:
             try:
@@ -24,28 +24,40 @@ class configuration():
                     print('Broker: {}'.format(self.broker))
                     self.broker_name = yfile['server']['server_type']
 
-                    self.service_list = yfile['service']['targets']
+                    self.service_list = yfile['service']['targets'] # list of paths a/b/c
                     print('Services loaded: {}'.format(self.service_list))
 		    
-		    self.devices = yfile['devices']
-		    print('Devices : {}'.format(self.devices.keys()))
-		    
-		    self.c_name = yfile['client']['client_name']
-		    self.c_devices = yfile['client']['devices']
+                    self.device_profile = yfile['devices'] # device dictionaries
+                    print('Devices : {}'.format(self.c_devices.keys()))
+		            
+                    self.c_name = yfile['client']['client_name']
+                    self.c_devices = yfile['client']['devices'] # names dev_id_1
+            except:
                 print('failed to open config file')
 
     def get_broker_services(self):
-        return self.broker, self.service_listc
+        return self.broker, self.service_list
 	
     def get_client(self):
-	return self.broker, self.c_name
+        '''
+        returns a tuple of broker and client name
+        '''
+        return self.broker, self.c_name
 	
     def get_device_profile(self, dev_name):
-	    return self.devices.get(dev_name, None)
+        '''
+        returns a dictionary of 
+        service: a/b/c
+        type: of device
+        returns: a single value or [list of what it returns temp, humidity etc]
+        location: str of where the device is
+        interval: int of how often it should be pinged and return a reading
+        '''
+        return self.device_profile.get(dev_name, None)
     
     def get_device_by_type(self, dev_type):
 	    devices = []
 	    for dev in self.c_devices:
-		    if self.devices[dev]['type'].get(dev_type, None):
-			    devices.append(self.devices[dev])
+		    if self.c_devices[dev]['type'].get(dev_type, None):
+			    devices.append(self.c_devices[dev])
 	    return devices
