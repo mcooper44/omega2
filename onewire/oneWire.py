@@ -48,7 +48,7 @@ def setupOneWire(gpio, times_to_try=2):
     the kernel module
     '''
     # check and retry up to n times if the 1-Wire bus has not been set up
-    for i in range (times_to_try):
+    for _ in range (times_to_try):
 	
         if checkFilesystem():
             return True # exits if the bus is setup
@@ -86,19 +86,25 @@ def scanAddresses():
     the omega kernal module will mount the hardware to a dir
     with the name of the attached one wire device
     the kernel module scans for attached devices at a regular interval
-    
-    param: label can be invoked if using this method to 
-    identify the serial number of the device for labelling purposes
-    it should be the type of hardware i.e. ds18b20 etc.
     '''
     if not checkFilesystem():
         return False
+    try:
+        with open(paths["slaves"]) as slaveListFile:
+            slaveList = slaveListFile.read().split("\n")
+            # last element is an empty string due to the split
+            del slaveList[-1]
+        return slaveList
+    except:
+        print('could not open file path')
+        return False
 
-    with open(paths["slaves"]) as slaveListFile:
-        slaveList = slaveListFile.read().split("\n")
-        # last element is an empty string due to the split
-        del slaveList[-1]
-    return slaveList
+def returnDeviceLabels(slaveList):
+    '''
+    parses the slave list to extract the family and identifiers of
+    the one wire devices that are mounted by the kernel modele
+    '''
+    pass
 
 # use to get the address of a single connected device
 def scanOneAddress():
@@ -111,17 +117,31 @@ def scanOneAddress():
 
 # class definition for one wire devices
 class OneWire:
+    '''
+    Provides a way to interact with the kernel module
+    and get messages from the onewire devices attached to it.
+
+    '''
+
     def __init__(self, address, gpio=19):      # use gpio 19 by default if not specified
         self.gpio = str(gpio)
         self.address = str(address)
         self.slaveFilePath = oneWireDir + "/" + self.address + "/" + "w1_slave"
+        self.devices = None # oneWire devices mounted
         self.setupComplete = self.__prepare()
 
     # prepare the object
     def __prepare(self):
-        # check if the system file exists
-        # if not, set it up, then check one more time
-	# store return value True/False in self.setupComplete
+        '''
+        this method is run when the class is instantiated.
+        it performs three checks by calling
+        setupOneWire, checkSlaves, checkRegistered
+        and returns True of False based on the results of
+        those cascading checks and stores True/False in
+        self.setupComplete
+        '''
+        # attempt to setup the kernel module if it is not already 
+        # present
         if not setupOneWire(self.gpio):
             print("Could not set up 1-Wire on GPIO " + self.gpio)
             return False
@@ -138,6 +158,8 @@ class OneWire:
             return False                        
 
         # the device has been properly set up
+        device_listing = scanAddresses()
+        self.devices = returnDeviceLabels(device_listing)
         return True
 
     # function to read data from the sensor
